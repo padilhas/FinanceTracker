@@ -1,0 +1,1 @@
+case class Rule( maStr: String, replace: String)
