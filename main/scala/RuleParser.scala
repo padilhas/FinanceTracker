@@ -1,5 +1,4 @@
 import java.time.LocalDate
-import java.time.format.DateTimeFormatterBuilder
 
 import scala.collection.Map
 
@@ -34,8 +33,7 @@ object RuleParser{
         Manuvie, Manuvie
         Manulife, Manuvie
         Morgan Stanley, Salaire
-        PAIE GOUV, Salaire,
-        Gouv. QUEBEC, Gouv Quebec
+        PAIE GOUV, Salaire
 
     """    }
   val rules = parseRules(rulesText)
@@ -57,8 +55,8 @@ object RuleParser{
 
   def calculate() = {
     //val cats = getTransactions(transLine)
-    onlyGroup(fileToString(capitalFile,getTransactionCapital))
-    doMore(fileToString(capitalFile, getTransactionCapital))
+    //onlyGroup(fileToString())
+    doMore(fileToString())
   }
 
   def doMore(trans : Seq[Transaction]) = {
@@ -76,15 +74,12 @@ object RuleParser{
       println(s" By cat ${t._1} = total is $total  ")
     })
   }
-  val bmoFile = "/Users/fabiopadilha/Downloads/statement-2.csv"
-  val capitalFile = "/Users/fabiopadilha/Downloads/07-09-2018_transactions_charger.csv"
-  def fileToString(file: String, conv: (String) => Option[Transaction] ) :Seq[Transaction] ={
-    //val bufFile = io.Source.fromFile()
-    val bufFile = io.Source.fromFile(file)
+  def fileToString() :Seq[Transaction] ={
+    val bufFile = io.Source.fromFile("/Users/fabiopadilha/Downloads/statement-2.csv")
 
     val lines = bufFile.getLines.toList
     bufFile.close()
-    lines.flatMap(conv.apply(_))
+    lines.flatMap(getTransaction)
   }
 
   def parseRules(text: String): Seq[Rule] = {
@@ -129,25 +124,12 @@ Honda Finance, -155.23, 20180808
 
   def toBigDecimal(str: String): BigDecimal = BigDecimal(str.trim)
 
-  val df = new DateTimeFormatterBuilder().appendPattern("yyyyMMdd").toFormatter
-
-  def toLocalDate(str: String): LocalDate = {
-    LocalDate.parse(str,df)
-
-  }
+  def toLocalDate(str: String): LocalDate = LocalDate.now()
 
   def splitLines(text: String) : Seq[String] = {
     text.split("\n")
   }
-  def getTransactionBmo(line: String) : Option[Transaction] = {
-    val ss: Seq[String] = line.trim.split(",")
-    if (ss.length == 5 && !ss(0).contains("First"))
-      Some(Transaction(ss(4), toBigDecimal(ss(3)), toLocalDate(ss(2))))
-    else
-      None
-  }
-
-  def getTransactionCapital(line: String) : Option[Transaction] = {
+  def getTransaction(line: String) : Option[Transaction] = {
     val ss: Seq[String] = line.trim.split(",")
     if (ss.length == 5 && !ss(0).contains("First"))
       Some(Transaction(ss(4), toBigDecimal(ss(3)), toLocalDate(ss(2))))
